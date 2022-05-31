@@ -33,21 +33,23 @@ class reversiGame {
     play(position) {
         let positions = this.isValidPlay(position)
         if (positions.length == 0) return this;
-
-        //Update crrPlayer
+        
+        
+        this.state.push({x: position.x, y: position.y, color: this.players[0]});
+        this.capture(positions, this.players[0]);
+        
         let crrPlayer = this.players.shift();
         this.players.push(crrPlayer);
-        this.capture(positions, crrPlayer);
 
-        this.state.push({x: position.x, y: position.y, crrPlayer});
-
-        return new reversiGame(this.players, this.state);
+        return new reversiGame([...this.players], [...this.state]);
     }
 
     isValidPlay(position) {
         let {getCell, addPositions, state, players} = this;
         let crrPlayer = players[0];
         let positions = [];
+
+        if (getCell(state, position)) return [];
 
         function linearSearch(position, direction) {
             let currentCell = getCell(state, position);
@@ -64,7 +66,8 @@ class reversiGame {
             let adjacentCell = getCell(state, adjacentPos);
 
             if (adjacentCell && adjacentCell.color != crrPlayer) {
-                positions = [...positions, ...linearSearch(adjacentPos, {x, y})];
+                let linearResult = linearSearch(adjacentPos, {x, y});
+                positions = [...positions, ...linearResult];
             }      
         }
 
@@ -103,15 +106,6 @@ class reversiGame {
             
             this.getCell(state, cell).color = color;
         }
-    }
-
-    isValidPosition(position) {
-        let {dimensions} = this;
-    
-        return (
-            position.x >= 0 && position.x < dimensions.x &&
-            position.y >= 0 && position.y < dimensions.y
-        );
     }
 
     addPositions(p1, p2) {
@@ -174,6 +168,21 @@ let initialState = [
 
 let game = new reversiGame(["white", "black"], initialState);
 
-
 renderBoard(game.getState());
 renderHints(game.getValidPlays());
+
+const canvas = document.querySelector(".board");
+
+canvas.addEventListener("click", (e) => {
+    let xOffSet = e.offsetX;
+    let yOffSet = e.offsetY;
+
+    let dimensions = canvas.width / 8;
+    let x = Math.floor(xOffSet / dimensions);
+    let y = Math.floor(yOffSet / dimensions);
+    console.log({x, y});
+
+    game = game.play({x, y});
+    renderBoard(game.getState());
+    renderHints(game.getValidPlays());
+})
