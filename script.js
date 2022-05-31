@@ -31,12 +31,15 @@ class reversiGame {
     }
 
     play(position) {
-        if (! this.isValidPosition(position)) return this;
+        let positions = this.isValidPlay(position)
+        if (positions.length == 0) return this;
 
+        //Update crrPlayer
         let crrPlayer = this.players.shift();
         this.players.push(crrPlayer);
+        this.capture(positions, crrPlayer);
 
-        this.recursiveSearch(position, crrPlayer);
+        this.state.push({x: position.x, y: position.y, crrPlayer});
 
         return new reversiGame(this.players, this.state);
     }
@@ -44,12 +47,14 @@ class reversiGame {
     isValidPlay(position) {
         let {getCell, addPositions, state, players} = this;
         let crrPlayer = players[0];
+        let positions = [];
 
         function linearSearch(position, direction) {
             let currentCell = getCell(state, position);
-            if (!currentCell) return false;
-            if (currentCell.color == crrPlayer) return true; 
-            return linearSearch(addPositions(position, direction), direction)
+            if (!currentCell) return [];
+            if (currentCell.color == crrPlayer) return [position]; 
+            let tailResult = linearSearch(addPositions(position, direction), direction)
+            return tailResult[0] ? [position, ...tailResult] : []
         }
         
         for (let sections = 0; sections < 2; sections += 0.25) {
@@ -59,11 +64,11 @@ class reversiGame {
             let adjacentCell = getCell(state, adjacentPos);
 
             if (adjacentCell && adjacentCell.color != crrPlayer) {
-                if (linearSearch(adjacentPos, {x, y})) return true;
+                positions = [...positions, ...linearSearch(adjacentPos, {x, y})];
             }      
         }
 
-        return false;
+        return positions;
     } 
 
     getValidPlays() {
@@ -73,7 +78,7 @@ class reversiGame {
 
         for (let y = 0; y < dimensions.y; y++) {
         for (let x = 0; x < dimensions.x; x++) {
-            if (!this.getCell(this.state, {x, y}) && this.isValidPlay({x, y})) {
+            if (this.isValidPlay({x, y})[0]) {
                 plays.push({x, y});
             }
         }}
@@ -90,43 +95,14 @@ class reversiGame {
         return state.find(e => e.x == position.x && e.y  == position.y);
     }
 
-    recursiveSearch(position, color, type = null) {
-        let {getCell, addPositions, state} = this;
+    capture(capturedCells, color) {
+        let state = this.getState();
 
-        if (type == null) {
-
-            let adjacentPlays = false;
-
-            for (let sections = 0; sections < 2; sections += 0.25) {
-                let x = Math.round(Math.cos(Math.PI * sections));
-                let y = Math.round(Math.sin(Math.PI * sections));
-                let adjacentPos = this.addPositions(position, {x, y});
-                
-                if (getCell(state, adjacentPos) && getCell(state, adjacentPos).color != color) {
-                    //TODO: criar uma lista com todas as posicoes validas para jogars
-                    if (this.recursiveSearch( adjacentPos, color, {x, y}))
-                        this.getState().push({x: position.x, y: position.y, color});
-                }
-                  
-            }
-
-
-        } else if (this.isValidPosition(position)) {
-            let crrCell = getCell(state, position);
+        for (let cell of capturedCells) {
+            //updating color 
             
-            if (!crrCell) return false;
-            if (crrCell.color == color) return true;
-            
-            let recursiveTest = this.recursiveSearch(addPositions(position, type), color, type);
-            
-            if (recursiveTest) {
-                crrCell.color = color;
-            } 
-
-            return recursiveTest;
+            this.getCell(state, cell).color = color;
         }
-
-        return false;
     }
 
     isValidPosition(position) {
@@ -168,17 +144,36 @@ function renderBoard(gameState) {
     
 }
 
+function renderHints(hints) {
+    const canvas = document.querySelector(".board");
+    const ctx = canvas.getContext("2d");
+    const cellDimension = (canvas.width / 8);
+
+    function drawCell(position, dimension, color) {
+        const {x, y} = position;
+        
+        ctx.fillStyle = `${color}`;
+        ctx.beginPath();
+        ctx.arc(x + dimension/2, y + dimension/2, dimension/2 - 20, 0, Math.PI * 2); 
+        ctx.fill()
+    }
+
+    for(let cell of hints) {
+        let position = {x: cell.x * cellDimension, y: cell.y * cellDimension};
+        drawCell(position, cellDimension, "red");
+    }
+    
+}
+
 let initialState = [
     {x: 3, y:3, color: "white"},
     {x: 4, y:3, color: "black"},
-    {x: 3, y:4, color: "white"},
-    {x: 4, y:4, color: "black"}
+    {x: 3, y:4, color: "black"},
+    {x: 4, y:4, color: "white"}
 ];
 
 let game = new reversiGame(["white", "black"], initialState);
 
-// game = game.play({x: 5, y: 3});
-// game = game.play({x: 2, y: 2});
-// game = game.play({x: 1, y: 1});
 
 renderBoard(game.getState());
+renderHints(game.getValidPlays());
