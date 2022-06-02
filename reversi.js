@@ -8,7 +8,10 @@ export default class reversiGame {
     }
 
     getState() {
-        return this.state;
+        return this.state.map(el => {
+            let {x, y, color} = el;
+            return {x, y,color};
+        })
     }
 
     getdimensions() {
@@ -24,7 +27,7 @@ export default class reversiGame {
     }
 
     getPlayers() {
-        return this.players;
+        return [...this.players];
     }
 
     getCurrentPlayer() {
@@ -68,12 +71,12 @@ export default class reversiGame {
     }
 
     skip() {
-        let crrPlayer = this.getPlayers().shift();
-        this.getPlayers().push(crrPlayer);
+        let crrPlayer = this.getCurrentPlayer();
+        let newOrder = crrPlayer == "white" ? ["black", "white"] : ["white", "black"];
 
         return new reversiGame (
-            [...(this.getPlayers())],
-            [...(this.getState())], 
+            newOrder,
+            this.getState(), 
             [this, ...this.getHistory()]
         );
     }
@@ -82,24 +85,33 @@ export default class reversiGame {
         
         if (!position) return this.skip();
 
-        let positions = this.isValidPlay(position)
+        let positions = this.isValidPlay(position);
         if (positions.length == 0) return this;
 
-        this.capture(positions, this.players[0]);
-        this.state.push({x: position.x, y: position.y, color: this.players[0]});
-        
-        let crrPlayer = this.players.shift();
-        this.players.push(crrPlayer);
+        let currentPlayer = this.getCurrentPlayer();
 
-        return new reversiGame([...this.players], [...this.state], [this, ...this.history]);
+        let newState = this.capture(positions, currentPlayer)
+        let newPlayers = currentPlayer == "white" ? ["black", "white"] : ["white", "black"]
+
+        return new reversiGame(newPlayers, newState, [this, ...this.history]);
     }
 
     capture(capturedCells, color) {
         let state = this.getState();
-
-        for (let cell of capturedCells) {
-            this.getCell(state, cell).color = color;
+        
+        for (let position of capturedCells) {
+            let {x, y} = position;
+            let piece = this.getCell(state, position);
+        
+            if (!piece) {
+                state.push({x, y, color});
+            } else {
+                piece.color = color;
+            }
+            
         }
+
+        return state;
     }
 
     getValidPlays() {
@@ -108,7 +120,7 @@ export default class reversiGame {
 
         for (let y = 0; y < dimensions.y; y++) {
         for (let x = 0; x < dimensions.x; x++) {
-            if (this.isValidPlay({x, y})[0]) {
+            if (this.isValidPlay({x, y}).length > 1) {
                 plays.push({x, y});
             }
         }}
@@ -143,7 +155,7 @@ export default class reversiGame {
             }      
         }
 
-        return positions;
+        return [position, ...positions];
     } 
 
     static initializeGame() {
