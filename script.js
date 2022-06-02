@@ -1,38 +1,62 @@
 import {renderBoard, renderHints} from "./renders.js";
 import reversiGame from "./reversi.js";
 
-let game = reversiGame.initializeGame();
-const canvas = document.querySelector(".board");
-const skip = document.querySelector(".skip");
+function resetGame (game) { 
+    const canvas = document.querySelector(".board");
+    const playBtn = document.querySelector(".play");
 
-renderBoard(game.getState(), canvas);
-renderHints(game.getValidPlays(), canvas);
+    game = reversiGame.initializeGame();
+    playBtn.addEventListener("click", () => resetGame(game));
+    canvas.addEventListener("click", (e) => translateInput(e, game));
+    
+    updateVisuals(game);
+}
 
-skip.addEventListener("click",() => {    
-    game = game.skip();
-    renderBoard(game.getState(), canvas);
-    renderHints(game.getValidPlays(), canvas);
-    console.log(game.getWinner());
-});
-
-canvas.addEventListener("click", (e) => {
-    console.log(game.getWinner());
-    console.log(game.history);
+function translateInput(event, game) {
+    const canvas = document.querySelector(".board");
 
     if (game.getWinner() == "") {
-        let xOffSet = e.offsetX;
-        let yOffSet = e.offsetY;
+        let xOffSet = event.offsetX;
+        let yOffSet = event.offsetY;
     
         let dimensions = canvas.width / 8;
         let x = Math.floor(xOffSet / dimensions);
         let y = Math.floor(yOffSet / dimensions);
     
         game = game.play({x, y});
-        renderBoard(game.getState(), canvas);
-        renderHints(game.getValidPlays(), canvas);
     }
+
+    updateVisuals(game);
+}
+
+function updateVisuals(game) {
+    const canvas = document.querySelector(".board");
+
+    renderBoard(game.getState(), canvas);
+    renderHints(game.getValidPlays(), canvas);
+    updateMessage(game);
+}
+
+function updateMessage(game) {
+   
+    function getMessage(state) {
+        if (state == "tie") 
+        return `Result: <strong>Tie<\strong>`;
+
+        if (state) 
+        return `The winner is:<strong>${state}<\strong>`;
     
-})
+        return `Current Player: ${game.getCurrentPlayer()}`;
+    }
+
+    const gameState = document.querySelector(".game-state");
+    const winner = game.getWinner();
+
+    gameState.innerHTML = getMessage(winner);
+}
+
+let GAME;
+resetGame(GAME);
 
 //helper function
 function randomBots() {
@@ -53,4 +77,3 @@ function randomBots() {
     renderBoard(game.getState(), canvas);
 }
 
-randomBots();

@@ -79,14 +79,14 @@ export default class reversiGame {
     }
 
     play(position) {
-        // if don't have any plays autoskip
+        
         if (!position) return this.skip();
 
         let positions = this.isValidPlay(position)
         if (positions.length == 0) return this;
-        
-        this.state.push({x: position.x, y: position.y, color: this.players[0]});
+
         this.capture(positions, this.players[0]);
+        this.state.push({x: position.x, y: position.y, color: this.players[0]});
         
         let crrPlayer = this.players.shift();
         this.players.push(crrPlayer);
@@ -118,7 +118,7 @@ export default class reversiGame {
 
     isValidPlay(position) {
         let {getCell, addPositions, state, players} = this;
-        let crrPlayer = players[0];
+        let crrPlayer = this.getCurrentPlayer();
         let positions = [];
 
         if (getCell(state, position)) return [];
@@ -148,10 +148,10 @@ export default class reversiGame {
 
     static initializeGame() {
         let initialState = [
-            {x: 3, y:3, color: "black"},
-            {x: 4, y:3, color: "white"},
-            {x: 3, y:4, color: "white"},
-            {x: 4, y:4, color: "black"}
+            {x:3, y:3, color: "black"},
+            {x:4, y:3, color: "white"},
+            {x:3, y:4, color: "white"},
+            {x:4, y:4, color: "black"}
         ];
         
         let players = ["white", "black"];
