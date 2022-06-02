@@ -23,6 +23,14 @@ export default class reversiGame {
         return [...this.history];
     }
 
+    getPlayers() {
+        return this.players;
+    }
+
+    getCurrentPlayer() {
+        return this.players[0];
+    }
+
     getCell(state, position) {
         if (!position) return undefined;
         return state.find(e => e.x == position.x && e.y  == position.y);
@@ -30,10 +38,6 @@ export default class reversiGame {
 
     addPositions(p1, p2) {
         return {x: p1.x + p2.x, y: p1.y + p2.y};
-    }
-
-    getPlayers() {
-        return this.players;
     }
 
     getWinner() {
@@ -149,9 +153,11 @@ export default class reversiGame {
             {x: 3, y:4, color: "white"},
             {x: 4, y:4, color: "black"}
         ];
-
+        
         let players = ["white", "black"];
 
+        if (Math.random() < 0.5) players = ["black", "white"]; 
+        
         return new reversiGame(players, initialState);
     }
 
