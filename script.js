@@ -94,15 +94,16 @@ function setupVersusAi(canvas, getComputerMove) {
         
         const playerMove = translateInput(e);
 
-        console.log(playerMove)
         if (game.getValidPlays(playerMove).length > 0) {
             game = game.play(playerMove);
             updateVisuals(game); 
-        
-            const botMove = getComputerMove(game);
-            game = game.play(botMove);
-            console.log(botMove);
+        } else {
+            game = game.play();
+            console.log("Player skip");
         }
+
+        const botMove = getComputerMove(game);
+        game = game.play(botMove);
         
         updateVisuals(game); 
     })
@@ -117,53 +118,96 @@ function randomAi(game) {
     return randomPlay;
 }
 
+function heuristicFunction (game, color) {
+    const lookup = [
+        [99,  -8, 8,  6,  6, 8,  -8, 99],
+        [-8, -24,-4, -3, -3,-4, -24, -8],
+        [ 8,  -4, 7,  4,  4, 7,  -4,  8],
+        [ 6,  -3, 4,  0,  0, 4,  -3,  6],
+        [ 6,  -3, 4,  0,  0, 4,  -3,  6],
+        [ 8,  -4, 7,  4,  4, 7,  -4,  8],
+        [-8, -24,-4, -3, -3,-4, -24, -8],
+        [99,  -8, 8,  6,  6, 8,  -8, 99],
+    ];
+
+    let score = 0;
+
+    for (let piece of game.getState()) {
+        let {x, y} = piece;
+        if (piece.color != color) continue; 
+
+        score += lookup[y][x];
+    }
+
+    return score;
+}
+
 function miniMaxAi(game) {
+
+    let result = {move: undefined, score: -Infinity};
+    let depth = 3;
+
+    for (let move of game.getValidPlays()) {
+    
+        let newState = game.play(move);
+        let score = minimize(newState, depth);
+        
+        if (score > result.score) {
+            result.score = score;
+            result.move = move;
+        }
+    }
+
+    console.log("Escolhido: ", result)
 
     function maximize(newGame, depth) {
 
+        if (newGame.getWinner() == "black") {
+            return 1000;
+        }else if (newGame.getWinner() == "tie") {
+            return 0;
+        }
+
+
         if (depth <= 0) {
-            return newGame.getPoints("white")
+           return heuristicFunction(newGame, "white");
         }
         
         let score = -Infinity;
         
         for (let move of newGame.getValidPlays()) {
             let newState = newGame.play(move);
-            score = Math.max(score, minimize(newState, depth - 1))
+            let newScore = minimize(newState, depth - 1);
+            score = Math.max(score, newScore);
         }
 
         return score;
     } 
 
     function minimize(newGame, depth) {
+        
+        if (newGame.getWinner() == "black") {
+            return -1000;
+        }else if (newGame.getWinner() == "tie") {
+            return 0;
+        }
+
         if (depth <= 0) {
-            return newGame.getPoints("black")
+            return -heuristicFunction(newGame, "black");
         }
         
         let score = Infinity;
         
         for (let move of newGame.getValidPlays()) {
             let newState = newGame.play(move);
-            console.log(newGame.getCurrentPlayer());
-            score = Math.min(score, maximize(newState, depth - 1))
+            let newScore = maximize(newState, depth - 1);
+            score = Math.min(score, newScore);
         }
 
         return score;
     }
 
-    let result = {move: undefined, score: -Infinity};
-
-    for (let move of game.getValidPlays()) {
     
-        let newState = game.play(move);
-        let score = minimize(newState, 3);
-
-        if (score > result.score) {
-            result.score = score;
-            result.move = move;
-            //console.log(result);
-        }
-    }
 
     return result.move;
 }
