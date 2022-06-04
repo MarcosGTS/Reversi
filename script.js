@@ -91,23 +91,24 @@ function setupVersusAi(canvas, getComputerMove) {
         
         const playerMove = translateInput(e);
 
-        if (game.getValidPlays(playerMove).length > 0) {
-            game = game.play(playerMove); 
-        } else {
-            game = game.skip();
-            console.log("Player skip");
-        }
-
-        updateVisuals(game);
-
-        const botMove = getComputerMove(game);
-        if (botMove) {
-            game = game.play(botMove);
-        } else {
-            game = game.skip();
-            console.log("Bot skip")
-        }
-        
+        if (game.isValidPlay(playerMove).length > 0) {
+            if (game.getValidPlays(playerMove).length > 0) {
+                game = game.play(playerMove); 
+            } else {
+                game = game.skip();
+                console.log("Player skip");
+            }
+    
+            const botMove = getComputerMove(game);
+            
+            if (botMove) {
+                game = game.play(botMove);
+            } else {
+                game = game.skip();
+                console.log("Bot skip")
+            }
+        } 
+       
         updateVisuals(game); 
     })
 

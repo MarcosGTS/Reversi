@@ -100,6 +100,14 @@ export function miniMaxAi(game) {
     return result.move;
 }
 
+/*
+A forma de avaliar o game-state funciona, especificamente, nesse jogo
+ja que toda a conquista do adversario prejudica o jogador pricipal
+
+se o jogo tivesse mecanicas diferentes seria necessario cria codicoes para 
+avaliar o jogo do adversario
+*/
+
 export function miniMaxPruningAi(game) {
 
     function miniMaxAB(game, depth, maximizing, alpha = -Infinity, beta = Infinity) {
@@ -110,6 +118,12 @@ export function miniMaxPruningAi(game) {
 
         if (depth == 0) {
             return heuristicFunction(game, "white");
+        }
+
+        if (game.getValidPlays().length == 0) {
+            console.log('Ai skip')
+            let newState = game.skip();
+            return miniMaxAB(newState, depth - 1, !maximizing, alpha, beta)
         }
 
         if (maximizing) {
@@ -144,7 +158,7 @@ export function miniMaxPruningAi(game) {
     }
 
     let result = {move: undefined, score: -Infinity};
-    let depth = 3;
+    let depth = 4;
 
     for (let move of game.getValidPlays()) {
     
