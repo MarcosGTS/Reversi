@@ -2,17 +2,6 @@ import {renderBoard, renderHints} from "./renders.js";
 import { randomAi, miniMaxAi,miniMaxPruningAi } from "./bots.js";
 import reversiGame from "./reversi.js";
 
-function resetGame (game) { 
-    const canvas = document.querySelector(".board");
-    const playBtn = document.querySelector(".play");
-
-    game = reversiGame.initializeGame();
-    playBtn.addEventListener("click", () => resetGame(game));
-    canvas.addEventListener("click", (e) => translateInput(e, game));
-    
-    updateVisuals(game);
-}
-
 function translateInput(event) {
     const canvas = document.querySelector(".board");
 
@@ -52,29 +41,23 @@ function updateMessage(game) {
     gameState.innerHTML = getMessage(winner);
 }
 
-let canvas = document.querySelector(".board");
-let GAME;
+function changeBot() {
+    let selector = document.querySelector("#AIs");
+    let {selectedIndex}= selector.options;
+    let selectedItem = selector.options[selectedIndex].value;
+    let selectedAI = randomAi;
 
-setupVersusAi(canvas, miniMaxPruningAi);
+    if (selectedItem == "randomAi")  selectedAI = randomAi;
+    if (selectedItem == "simpleMinimax") selectedAI = miniMaxAi;
+    if (selectedItem == "pruningMinimax") selectedAI = miniMaxPruningAi;
+   
+    let playBtn = document.querySelector(".play");
+    let cloneBtn =playBtn.cloneNode(true);
 
-//helper function
-// function randomBots() {
-//     let game = reversiGame.initializeGame();
-    
-//     while (game.getWinner() == "") {
-//         let plays = game.getValidPlays()
-        
-//         if (plays.length == 0) {
-//             game = game.skip()
-//             continue;
-//         }
-    
-//         let randomplay = plays[Math.floor(Math.random() * plays.length)];
-//         game = game.play(randomplay);
-//     }
-//     console.log(game.getWinner());
-//     renderBoard(game.getState(), canvas);
-// }
+    cloneBtn.addEventListener("click", () => setupVersusAi(canvas, selectedAI))
+
+    playBtn.parentNode.replaceChild(cloneBtn, playBtn);
+};
 
 function setupVersusAi(canvas, getComputerMove) {
     let game = reversiGame.initializeGame();
@@ -111,6 +94,10 @@ function setupVersusAi(canvas, getComputerMove) {
        
         updateVisuals(game); 
     })
-
 }
 
+let canvas = document.querySelector(".board");
+let selector = document.querySelector("#AIs");
+selector.addEventListener("change", changeBot);
+
+setupVersusAi(canvas, randomAi);

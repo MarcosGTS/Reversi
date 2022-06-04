@@ -5,11 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reversi</title>
-    <script type="module" src="script.js" defer></script>
+    <script type="module" src="src/script.js" defer></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button class="play">Play</button>
-    <canvas class="board" width="500px" height="500px"></canvas>
-    <div class="game-state"></div>
+
+    <div class="game">
+        <div class="bar">
+            <button class="play">Play</button>
+    
+            <select id="AIs">
+                <option value="randomAi" selected>Random AI</option>
+                <option value="simpleMinimax">MiniMax AI</option>
+                <option value="pruningMinimax">MiniMax AI(Pruning)</option>
+            </select>
+        </div>
+    
+        <canvas class="board" width="500px" height="500px"></canvas>
+        <div class="game-state"></div>
+        
+    </div>
+
 </body>
 </html>

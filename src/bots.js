@@ -117,11 +117,10 @@ export function miniMaxPruningAi(game) {
         if (game.getWinner() == "tie") return 0;
 
         if (depth == 0) {
-            return heuristicFunction(game, "white");
+            return heuristicFunction(game, "white") - heuristicFunction(game, "black");
         }
 
         if (game.getValidPlays().length == 0) {
-            console.log('Ai skip')
             let newState = game.skip();
             return miniMaxAB(newState, depth - 1, !maximizing, alpha, beta)
         }
