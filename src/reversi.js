@@ -86,7 +86,9 @@ export default class reversiGame {
         if (!position) return this.skip();
 
         let positions = this.isValidPlay(position);
-        if (positions.length == 0) return this;
+
+        if (positions.length <= 1) return this;
+        
 
         let currentPlayer = this.getCurrentPlayer();
 
