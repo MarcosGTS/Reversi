@@ -116,13 +116,13 @@ export function miniMaxPruningAi(game) {
         if (game.getWinner() == "white") return 1000;
         if (game.getWinner() == "tie") return 0;
 
-        if (depth == 0) {
-            return heuristicFunction(game, "white") - heuristicFunction(game, "black");
-        }
-
         if (game.getValidPlays().length == 0) {
             let newState = game.skip();
-            return miniMaxAB(newState, depth - 1, !maximizing, alpha, beta)
+            return miniMaxAB(newState, depth, !maximizing);
+        }
+
+        if (depth == 0) {
+            return heuristicFunction(game, "white") - heuristicFunction(game, "black");
         }
 
         if (maximizing) {
@@ -146,7 +146,7 @@ export function miniMaxPruningAi(game) {
                 let newState = game.play(move);
                 let newScore = miniMaxAB(newState, depth - 1, !maximizing, alpha, beta)
                 minScore = Math.min(minScore, newScore);
-                beta = Math.min(alpha, newScore);
+                beta = Math.min(beta, newScore);
                 
                 if (beta <= alpha) 
                     break;
@@ -157,7 +157,7 @@ export function miniMaxPruningAi(game) {
     }
 
     let result = {move: undefined, score: -Infinity};
-    let depth = 4;
+    let depth = 3;
 
     for (let move of game.getValidPlays()) {
     
