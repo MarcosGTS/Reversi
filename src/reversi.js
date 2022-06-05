@@ -47,12 +47,17 @@ export default class reversiGame {
         let {state, dimensions} = this; 
         let maxPoints = dimensions.x * dimensions.y;
         
+        if (this.getPoints("black") == 0) return "white";
+        if (this.getPoints("white") == 0) return "black";
+
         if (!this.checkSkipCase() && state.length < maxPoints)
             return "";
         
         if (this.getPoints("black") > this.getPoints("white")) {
             return "black";
-        } else if (this.getPoints("black") < this.getPoints("white")) {
+        } 
+
+        if (this.getPoints("black") < this.getPoints("white")) {
             return "white";
         }
             

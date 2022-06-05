@@ -73,15 +73,18 @@ function setupVersusAi(canvas, getComputerMove) {
     canvas.addEventListener("click", (e) => {
         
         const playerMove = translateInput(e);
-
-        if (game.isValidPlay(playerMove).length > 0) {
-            if (game.getValidPlays(playerMove).length > 0) {
-                game = game.play(playerMove); 
-            } else {
-                game = game.skip();
-                console.log("Player skip");
-            }
-    
+        const areValidMoves = game.getValidPlays().length > 0;
+        const isValidMove = game.isValidPlay(playerMove).length > 1;
+        
+        
+        if (!areValidMoves) {
+            game = game.skip();
+            console.log("Player skip")
+        } else if (isValidMove) {
+            game = game.play(playerMove);
+        }
+        
+        if (!areValidMoves || isValidMove) {
             const botMove = getComputerMove(game);
             
             if (botMove) {
@@ -90,8 +93,8 @@ function setupVersusAi(canvas, getComputerMove) {
                 game = game.skip();
                 console.log("Bot skip")
             }
-        } 
-       
+        }
+        
         updateVisuals(game); 
     })
 }
